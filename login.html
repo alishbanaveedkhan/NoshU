@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>NoshU — Staff Login</title>
+<meta http-equiv="Permissions-Policy" content="identity-credentials-get=()">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -169,15 +170,15 @@
     <div class="card-eyebrow">Staff access</div>
     <h1>Sign in</h1>
 
-    <div class="form-error" id="formError">Incorrect username or password. Please try again.</div>
+    <div class="form-error" id="formError">Incorrect email or password. Please try again.</div>
 
-    <form id="loginForm" novalidate>
+    <form id="loginForm" novalidate autocomplete="off">
       <div class="field">
-        <label for="username">Username</label>
+        <label for="username">Email</label>
         <div class="input-wrap">
-          <input type="text" id="username" placeholder="Enter your username" autocomplete="username">
+          <input type="email" id="username" placeholder="you@noshu.app" autocomplete="off">
         </div>
-        <div class="field-error" id="errUsername">Please enter your username.</div>
+        <div class="field-error" id="errUsername">Please enter your email.</div>
       </div>
 
       <div class="field">
@@ -201,30 +202,21 @@
 
 <script>
 /* =========================================================
-   SUPABASE
+   STAFF LOGIN — real Supabase Auth.
+   Each staff account is a Supabase Auth user; the "staff"
+   table maps that user to the venue they manage (see
+   supabase_staff_auth_setup.sql). Signing in here creates a
+   real session, which the staff dashboards now check for
+   before showing anything.
    ========================================================= */
 const SUPABASE_URL = "https://nuybppphcmynljauapyx.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_zD30L1FEq-1fSR6y1bIPLA_escLU2EW";
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* =========================================================
-   STAFF LOGIN
-   The username field accepts the short friendly login
-   ("ark@bahria") and maps it to the real Supabase Auth email
-   behind the scenes. Password is checked by Supabase itself,
-   not stored anywhere in this file.
-   ========================================================= */
-const EMAIL_MAP = {
-  "ark@bahria":  "ark.staff@noshu.local",
-  "main@bahria": "main.staff@noshu.local",
-  "wow@bahria":  "wow.staff@noshu.local",
-};
-
-// Which dashboard each venue value in the "staff" table maps to.
-const DASHBOARD_BY_VENUE = {
+const VENUE_DASHBOARDS = {
   ark: "staff_ark.html",
   maincafeteria: "staff_main_cafeteria.html",
-  wowfries: "staff_wowfries.html",
+  wowfries: "staff_wowfries.html"
 };
 
 const form = document.getElementById("loginForm");
@@ -256,38 +248,6 @@ function validate() {
   return valid;
 }
 
-// Signs in with Supabase Auth, then looks up which venue this
-// account belongs to from the "staff" table. Returns the
-// dashboard filename to redirect to, or null on any failure.
-async function checkStaffLogin(username, password) {
-  const typedEmail = username.trim().toLowerCase();
-  const email = EMAIL_MAP[typedEmail] || typedEmail; // fall back to typing the real email directly
-
-  const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (authError || !authData.user) {
-    console.error("Auth error:", authError);
-    return null;
-  }
-
-  const { data: staffRow, error: staffError } = await supabaseClient
-    .from("staff")
-    .select("venue")
-    .eq("user_id", authData.user.id)
-    .maybeSingle();
-
-  if (staffError || !staffRow) {
-    console.error("Staff lookup error:", staffError);
-    await supabaseClient.auth.signOut();
-    return null;
-  }
-
-  return DASHBOARD_BY_VENUE[staffRow.venue] || null;
-}
-
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!validate()) return;
@@ -296,34 +256,49 @@ form.addEventListener("submit", async (e) => {
   loginBtn.disabled = true;
   formError.classList.remove("visible");
 
-  const dashboard = await checkStaffLogin(usernameInput.value, passwordInput.value);
+  const email = usernameInput.value.trim();
+  const password = passwordInput.value;
 
-  if (dashboard) {
-    window.location.href = dashboard;
-  } else {
+  const { data: authData, error: authError } = await sb.auth.signInWithPassword({ email, password });
+
+  if (authError || !authData.session) {
+    formError.textContent = "Incorrect email or password. Please try again.";
     formError.classList.add("visible");
     loginBtn.classList.remove("loading");
     loginBtn.disabled = false;
+    return;
   }
-});
 
-/* ---------------------------------------------------------
-   If already logged in (e.g. came back via browser Back),
-   skip straight to the right dashboard instead of re-asking.
-   --------------------------------------------------------- */
-(async () => {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) return;
-
-  const { data: staffRow } = await supabaseClient
+  // Signed in — now find out which venue this staff account manages.
+  const { data: staffRow, error: staffError } = await sb
     .from("staff")
     .select("venue")
-    .eq("user_id", session.user.id)
-    .maybeSingle();
+    .eq("user_id", authData.user.id)
+    .single();
 
-  if (staffRow && DASHBOARD_BY_VENUE[staffRow.venue]) {
-    window.location.href = DASHBOARD_BY_VENUE[staffRow.venue];
+  const dashboard = staffRow ? VENUE_DASHBOARDS[staffRow.venue] : null;
+
+  if (staffError || !dashboard) {
+    formError.textContent = "This account isn't linked to a venue yet. Contact an admin.";
+    formError.classList.add("visible");
+    loginBtn.classList.remove("loading");
+    loginBtn.disabled = false;
+    await sb.auth.signOut();
+    return;
   }
+
+  window.location.href = dashboard;
+});
+
+/* If already logged in (valid session) and a matching staff
+   row exists, skip straight to the dashboard instead of
+   showing the form again. */
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  const { data: staffRow } = await sb.from("staff").select("venue").eq("user_id", session.user.id).single();
+  const dashboard = staffRow ? VENUE_DASHBOARDS[staffRow.venue] : null;
+  if (dashboard) window.location.href = dashboard;
 })();
 </script>
 </body>
