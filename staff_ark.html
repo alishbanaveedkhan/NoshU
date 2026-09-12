@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>NoshU Staff — ARK Cafe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary-color: #ff5722;
+    --accent-color: #ffb300;
+    --bg-color: #fafafa;
+    --card-bg: #ffffff;
+    --text-dark: #1a1a1a;
+    --text-soft: #6b6b6b;
+    --status-success: #2e7d32;
+    --status-error: #c62828;
+    --line: rgba(26,26,26,0.10);
+    --font-display: 'Fredoka', sans-serif;
+    --font-body: 'Sora', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-color);
+    color:var(--text-dark);
+    font-family:var(--font-body);
+    min-height:100vh;
+    min-height:100dvh;
+  }
+  button{ font-family:inherit; cursor:pointer; }
+  a{ color:inherit; text-decoration:none; }
+  textarea, input{ font-family:inherit; }
+
+  /* ---------- Header ---------- */
+  header.topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding:12px 20px;
+    background:var(--card-bg);
+    border-bottom:1px solid var(--line);
+  }
+  .logo-row{ display:flex; align-items:center; gap:8px; }
+  .logo-mark{ width:32px; height:44px; flex:0 0 auto; display:block; }
+  .logo-word{
+    font-family:var(--font-display); font-weight:700; font-size:19px;
+    color:var(--text-dark);
+  }
+  .staff-pill{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+    background:rgba(26,26,26,0.08); color:var(--text-soft);
+    padding:4px 10px; border-radius:999px;
+  }
+  .logout-link{
+    font-size:13px; font-weight:600; color:var(--text-soft);
+  }
+  .logout-link:hover{ color:var(--primary-color); }
+
+  /* ---------- Venue banner ---------- */
+  .venue-banner{
+    background: linear-gradient(135deg, #2b1a12, #1a1a1a);
+    color:#fff;
+    padding:22px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    flex-wrap:wrap;
+  }
+  .venue-banner h1{
+    font-family:var(--font-display); font-weight:600; font-size:clamp(20px, 4vw, 26px);
+    margin:0;
+  }
+  .venue-banner .sub{ font-size:13px; color:rgba(255,255,255,0.65); margin-top:2px; }
+  .live-dot{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12.5px; font-weight:600; color:var(--accent-color);
+  }
+  .live-dot .dot{
+    width:7px; height:7px; border-radius:50%; background:var(--accent-color);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+  main{ max-width:1100px; margin:0 auto; padding:20px 20px 60px; }
+
+  /* ---------- Orders toggle bar ---------- */
+  .orders-toggle{
+    width:100%;
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--card-bg);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 18px;
+    margin-bottom:22px;
+    font-size:15px; font-weight:600;
+  }
+  .orders-toggle:hover{ border-color:rgba(255,87,34,0.35); }
+  .orders-toggle .left{ display:flex; align-items:center; gap:10px; }
+  .orders-badge{
+    background:var(--primary-color); color:#fff;
+    border-radius:999px; min-width:22px; height:22px; padding:0 6px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700;
+  }
+  .chevron{ transition: transform 0.2s ease; color:var(--text-soft); font-size:14px; }
+  .chevron.open{ transform:rotate(180deg); }
+
+  .orders-panel{
+    display:none;
+    background:var(--card-bg);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:6px;
+    margin:-14px 0 22px;
+    overflow:hidden;
+  }
+  .orders-panel.open{ display:block; }
+
+  .order-row{
+    display:flex; align-items:center; gap:14px;
+    padding:14px 12px;
+    border-bottom:1px solid var(--line);
+  }
+  .order-row:last-child{ border-bottom:none; }
+  .order-row .oid{
+    font-family:var(--font-display); font-weight:700; font-size:15px;
+    color:var(--primary-color); min-width:90px;
+  }
+  .order-row .otime{ font-size:13px; color:var(--text-soft); flex:1; min-width:0; }
+  .order-row .ototal{ font-size:14px; font-weight:700; min-width:70px; text-align:right; }
+  .order-row .ostatus{
+    font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em;
+    padding:4px 9px; border-radius:999px;
+    white-space:nowrap;
+  }
+  .ostatus.Preparing{ background:rgba(255,179,0,0.18); color:#8a6100; }
+  .ostatus[data-status="Ready to pick up"]{ background:rgba(46,125,50,0.14); color:var(--status-success); }
+  .ostatus[data-status="Delivered"]{ background:rgba(26,26,26,0.10); color:var(--text-soft); }
+  .view-order-btn{
+    background:var(--text-dark); color:#fff; border:none;
+    border-radius:999px; padding:8px 16px; font-size:12.5px; font-weight:700;
+    flex:0 0 auto;
+  }
+  .view-order-btn:hover{ background:var(--primary-color); }
+  .remove-order-btn{
+    width:30px; height:30px; border-radius:50%; flex:0 0 auto;
+    border:1.5px solid var(--line); background:var(--card-bg); color:var(--text-soft);
+    font-size:14px; font-weight:700; line-height:1;
+  }
+  .remove-order-btn:hover{ border-color:var(--status-error); color:var(--status-error); background:rgba(198,40,40,0.06); }
+  .no-orders{ text-align:center; padding:26px 10px; color:var(--text-soft); font-size:13.5px; }
+
+  /* ---------- Filters + grid (reused look from student page) ---------- */
+  .active-filters{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .filter-bar{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+  .filter-chip{
+    font-size:13px; font-weight:600; padding:8px 14px; border-radius:999px;
+    border:1.5px solid var(--line); background:var(--card-bg); color:var(--text-soft);
+  }
+  .filter-chip.active{ border-color:var(--primary-color); background:rgba(255,87,34,0.08); color:var(--primary-color); }
+
+  .menu-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap:18px;
+  }
+
+  .item-card{
+    position:relative;
+    background:var(--card-bg);
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    box-shadow:0 2px 6px rgba(26,26,26,0.05);
+  }
+  .item-card.unavailable{ box-shadow:none; }
+
+  .item-img-wrap{
+    width:100%; aspect-ratio:1/1;
+    background-size:cover; background-position:center;
+    background-color:#eee;
+    position:relative;
+  }
+  .item-card.unavailable .item-img-wrap{ filter:grayscale(0.4); opacity:0.6; }
+  .item-tag{
+    position:absolute; top:8px; left:8px;
+    font-size:10.5px; font-weight:700; letter-spacing:0.02em;
+    padding:4px 9px; border-radius:999px; text-transform:uppercase;
+  }
+  .item-tag.drinks{ background:rgba(255,179,0,0.20); color:#8a6100; }
+  .item-tag.snacks{ background:rgba(46,125,50,0.14); color:var(--status-success); }
+  .item-unavailable-badge{
+    position:absolute; top:8px; right:8px;
+    background:rgba(26,26,26,0.75); color:#fff;
+    font-size:10px; font-weight:700; letter-spacing:0.02em;
+    padding:4px 8px; border-radius:999px; text-transform:uppercase;
+  }
+
+  .item-body{ padding:12px 14px 14px; display:flex; flex-direction:column; gap:6px; flex:1; }
+  .item-name{ font-size:14.5px; font-weight:600; line-height:1.3; }
+  .item-price{ font-family:var(--font-display); font-weight:600; font-size:15px; color:var(--text-dark); }
+  .item-comment{ font-size:12px; font-weight:600; color:#c62828; line-height:1.35; }
+
+  /* Staff hover actions */
+  .staff-actions{
+    display:flex; gap:8px; margin-top:auto; padding-top:6px;
+    opacity:0; transform:translateY(4px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    pointer-events:none;
+  }
+  .item-card:hover .staff-actions,
+  .item-card:focus-within .staff-actions{
+    opacity:1; transform:translateY(0);
+    pointer-events:auto;
+  }
+  @media (hover: none){
+    .staff-actions{ opacity:1; transform:none; pointer-events:auto; }
+  }
+  .staff-btn{
+    flex:1;
+    font-size:12px; font-weight:700;
+    border-radius:8px; padding:8px 6px;
+    border:1.5px solid var(--line);
+    background:var(--card-bg); color:var(--text-dark);
+    text-align:center;
+  }
+  .staff-btn:hover{ border-color:var(--primary-color); color:var(--primary-color); }
+  .staff-btn.oos-active{ background:var(--status-error); border-color:var(--status-error); color:#fff; }
+  .staff-btn.comment-active{ background:var(--accent-color); border-color:var(--accent-color); color:var(--text-dark); }
+
+  /* ---------- Comment modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(26,26,26,0.45);
+    z-index:110; display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    opacity:0; pointer-events:none; transition:opacity 0.2s ease;
+  }
+  .modal-overlay.visible{ opacity:1; pointer-events:auto; }
+
+  .modal-card{
+    background:var(--card-bg); width:100%; max-width:420px;
+    border-radius:16px; padding:22px;
+    transform:translateY(10px); transition:transform 0.22s ease;
+  }
+  .modal-overlay.visible .modal-card{ transform:translateY(0); }
+  .modal-card h2{ font-family:var(--font-display); font-size:17px; font-weight:600; margin:0 0 4px; }
+  .modal-card .item-sub{ font-size:13px; color:var(--text-soft); margin-bottom:14px; }
+  .modal-card textarea{
+    width:100%; min-height:90px; border-radius:10px; border:1.5px solid var(--line);
+    padding:11px 12px; font-size:14px; resize:vertical; color:var(--text-dark);
+  }
+  .modal-card textarea:focus{ outline:none; border-color:var(--primary-color); }
+  .modal-actions{ display:flex; gap:10px; margin-top:16px; }
+  .modal-actions button{
+    flex:1; border-radius:10px; padding:12px; font-size:14px; font-weight:700; border:none;
+  }
+  .btn-save{ background:var(--primary-color); color:#fff; }
+  .btn-save:hover{ background:#e64a19; }
+  .btn-clear{ background:var(--bg-color); color:var(--text-dark); border:1.5px solid var(--line) !important; }
+  .btn-clear:hover{ border-color:var(--status-error); color:var(--status-error); }
+
+  /* ---------- Receipt modal ---------- */
+  .receipt-modal{ max-width:440px; text-align:left; max-height:85vh; overflow-y:auto; }
+  .receipt-modal .oid-big{
+    font-family:var(--font-display); font-weight:700; font-size:26px; color:var(--primary-color);
+  }
+  .receipt-row{
+    display:flex; align-items:flex-start; gap:10px; padding:9px 0;
+    border-bottom:1px solid var(--line); font-size:14px;
+  }
+  .receipt-row .rr-name{ flex:1; font-weight:600; }
+  .receipt-row .rr-cat{ font-size:10.5px; text-transform:uppercase; color:var(--text-soft); display:block; margin-top:2px; font-weight:500; }
+  .receipt-row .rr-qty{ color:var(--text-soft); font-size:12.5px; }
+  .receipt-row .rr-total{ font-weight:700; min-width:60px; text-align:right; }
+  .receipt-total{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding-top:12px; margin-top:6px; border-top:1.5px solid var(--text-dark);
+  }
+  .receipt-total .amount{ font-family:var(--font-display); font-size:19px; font-weight:700; }
+  .details-box{
+    background:var(--bg-color); border-radius:12px; padding:12px 14px; margin:14px 0;
+    font-size:13.5px; display:flex; flex-direction:column; gap:6px;
+  }
+  .details-box .drow{ display:flex; justify-content:space-between; gap:10px; }
+  .details-box .drow span:first-child{ color:var(--text-soft); }
+  .details-box .drow span:last-child{ font-weight:600; text-align:right; }
+
+  .status-field label{ display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--text-dark); }
+  .status-select{
+    width:100%; padding:12px 13px; border-radius:10px; border:1.5px solid var(--line);
+    font-size:14.5px; background:#fff; color:var(--text-dark); font-weight:600;
+  }
+  .status-select:focus{ outline:none; border-color:var(--primary-color); }
+
+  .modal-close{
+    position:absolute; top:14px; right:16px;
+    border:none; background:transparent; font-size:18px; color:var(--text-soft);
+    width:32px; height:32px; border-radius:8px;
+  }
+  .modal-close:hover{ background:rgba(26,26,26,0.06); }
+  .modal-card{ position:relative; }
+
+  @media (max-width:600px){
+    .menu-grid{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:12px; }
+    .order-row{ flex-wrap:wrap; }
+    .order-row .otime{ order:3; flex-basis:100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="logo-row" href="index.html" aria-label="NoshU home">
+    <svg class="logo-mark" viewBox="0 -40 200 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M 92 45 C 80 32, 104 22, 92 5 C 80 -12, 104 -22, 92 -35" fill="none" stroke="var(--accent-color)" stroke-width="12" stroke-linecap="round"/>
+      <path d="M 118 45 C 106 32, 130 22, 118 5 C 106 -12, 130 -22, 118 -35" fill="none" stroke="var(--accent-color)" stroke-width="12" stroke-linecap="round"/>
+      <path d="
+        M 40 50
+        L 40 150
+        A 60 60 0 0 0 160 150
+        L 160 115
+        A 11 11 0 0 0 150 102
+        A 11 11 0 0 0 150 82
+        A 11 11 0 0 0 160 69
+        L 160 50
+        A 20 20 0 0 0 120 50
+        L 120 150
+        A 20 20 0 0 1 80 150
+        L 80 50
+        A 20 20 0 0 0 40 50 Z
+      " fill="var(--primary-color)"/>
+      <ellipse cx="100" cy="192" rx="20" ry="3" fill="#cf4327"/>
+      <path d="M 82 182 A 18 18 0 0 0 118 182 Z" fill="#cf4327"/>
+      <line x1="109" y1="184" x2="123" y2="170" stroke="#cf4327" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse cx="125" cy="168" rx="3.5" ry="5" fill="#cf4327" transform="rotate(35 125 168)"/>
+      <path d="M 97 178 C 94 174, 100 171, 97 167" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M 103 178 C 100 174, 106 171, 103 167" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span class="logo-word">NoshU</span>
+  </a>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <span class="staff-pill">Staff</span>
+    <a class="logout-link" href="login.html">Log out</a>
+  </div>
+</header>
+
+<div class="venue-banner">
+  <div>
+    <h1>ARK Cafe</h1>
+    <div class="sub">Staff dashboard</div>
+  </div>
+  <span class="live-dot"><span class="dot"></span>Live</span>
+</div>
+
+<main>
+  <button type="button" class="orders-toggle" id="ordersToggle">
+    <span class="left">
+      Check all orders
+      <span class="orders-badge" id="ordersBadge">0</span>
+    </span>
+    <span class="chevron" id="ordersChevron">▾</span>
+  </button>
+
+  <div class="orders-panel" id="ordersPanel">
+    <div id="ordersList"></div>
+  </div>
+
+  <div class="filter-bar" id="filterBar"></div>
+  <div class="menu-grid" id="menuGrid"></div>
+</main>
+
+<!-- Comment modal -->
+<div class="modal-overlay" id="commentModalOverlay">
+  <div class="modal-card">
+    <button type="button" class="modal-close" id="commentModalClose" aria-label="Close">✕</button>
+    <h2>Add a comment</h2>
+    <div class="item-sub" id="commentItemName"></div>
+    <textarea id="commentText" placeholder="e.g. Running low, may sell out soon"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn-clear" id="commentClearBtn">Clear comment</button>
+      <button type="button" class="btn-save" id="commentSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt / status modal -->
+<div class="modal-overlay" id="receiptModalOverlay">
+  <div class="modal-card receipt-modal">
+    <button type="button" class="modal-close" id="receiptModalClose" aria-label="Close">✕</button>
+    <div class="oid-big" id="receiptOid"></div>
+    <div id="receiptList" style="margin-top:12px;"></div>
+    <div class="receipt-total">
+      <span>Total</span>
+      <span class="amount" id="receiptTotal">Rs. 0</span>
+    </div>
+    <div class="details-box" id="receiptDetails"></div>
+    <div class="status-field">
+      <label for="statusSelect">Order status</label>
+      <select class="status-select" id="statusSelect">
+        <option value="Preparing">Preparing</option>
+        <option value="Ready to pick up">Ready to pick up</option>
+        <option value="Delivered">Delivered</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   ARK CAFE — item data (same items shown on the student page)
+   ========================================================= */
+const VENUE_KEY = "ark";
+const VENUE_NAME = "ARK Cafe";
+const CATEGORIES = ["drinks", "snacks"];
+const ITEMS = [
+     { id: "ark-d3", name: "Iced Vanilla Latte", price: 180, category: "drinks", img: "../img/iced_vanilla_latte.png" },
+      { id: "ark-s3", name: "Fudge Brownie", price: 300, category: "snacks", img: "../img/fudge_brownie.png" },
+      { id: "ark-s4", name: "Chocolate Donut", price: 450, category: "snacks", img: "../img/chocolate_donut.png" },
+      { id: "ark-s5", name: "Strawberry Donut", price: 450, category: "snacks", img: "../img/strawberry_donut.png" },
+      { id: "ark-s6", name: "Nutella Cookie", price: 500, category: "snacks", img: "../img/nutella_cookie.png" },
+      { id: "ark-s7", name: "Classic Cookie", price: 500, category: "snacks", img: "../img/classic_cookie.png" },
+      { id: "ark-d4", name: "Hot Americano", price: 400, category: "drinks", img: "../img/hot_americano.png" },
+      { id: "ark-d5", name: "Cappuccino", price: 400, category: "drinks", img: "../img/hot_cappuccino.png" },
+      { id: "ark-d6", name: "Hot Chocolate", price: 650, category: "drinks", img: "../img/hot_chocolate.png" },
+      { id: "ark-d7", name: "Iced Americano", price: 400, category: "drinks", img: "../img/iced_americano.png" },
+      { id: "ark-d8", name: "Iced Macchiato", price: 550, category: "drinks", img: "../img/iced_machiato.png" },
+      { id: "ark-d9", name: "Hazelnut Frappe", price: 650, category: "drinks", img: "../img/hazelnut_frappe.png" },
+      { id: "ark-d10", name: "Mocha Frappe", price: 650, category: "drinks", img: "../img/iced_mocha_frappe.png" },
+      { id: "ark-d11", name: "Kinder Frappe", price: 750, category: "drinks", img: "../img/iced_kinder_frappe.png" },
+      { id: "ark-d12", name: "Peach Iced Tea", price: 350, category: "drinks", img: "../img/iced_peach_tea.png" },
+      { id: "ark-d13", name: "Raspberry Iced Tea", price: 350, category: "drinks", img: "../img/raspbery_tea.png" },
+      { id: "ark-d14", name: "Lemon Mint Mojito", price: 350, category: "drinks", img: "../img/lemon_mint_mojito.png" },
+      { id: "ark-d15", name: "Blueberry Mojito", price: 350, category: "drinks", img: "../img/blueberry_mojito.png" },
+      { id: "ark-d16", name: "Strawberry Mojito", price: 350, category: "drinks", img: "../img/strawberry_mojito.png" },
+      { id: "ark-d17", name: "Classic Matcha", price: 600, category: "drinks", img: "../img/classic_matcha.png" },
+      { id: "ark-d18", name: "Strawberry Matcha", price: 650, category: "drinks", img: "../img/strawberry_matcha.png" },
+];
+const CATEGORY_LABELS = { meals: "Meals", drinks: "Drinks", snacks: "Snacks" };
+
+let activeCategory = "all";
+let commentTargetId = null;
+let receiptTargetId = null;
+
+/* ---------------------------------------------------------
+   ITEM AVAILABILITY STATE
+   Shared with student pages via localStorage["noshu_item_state"]
+   = { [venueKey]: { [itemId]: { outOfStock, comment } } }
+   --------------------------------------------------------- */
+function getAllItemState() {
+  try { return JSON.parse(localStorage.getItem("noshu_item_state") || "{}"); }
+  catch (e) { return {}; }
+}
+function getVenueItemState() {
+  const all = getAllItemState();
+  return all[VENUE_KEY] || {};
+}
+function saveVenueItemState(venueState) {
+  const all = getAllItemState();
+  all[VENUE_KEY] = venueState;
+  localStorage.setItem("noshu_item_state", JSON.stringify(all));
+}
+function toggleOutOfStock(itemId) {
+  const state = getVenueItemState();
+  const current = state[itemId] || {};
+  current.outOfStock = !current.outOfStock;
+  state[itemId] = current;
+  saveVenueItemState(state);
+  renderMenu();
+}
+function saveComment(itemId, text) {
+  const state = getVenueItemState();
+  const current = state[itemId] || {};
+  current.comment = text;
+  state[itemId] = current;
+  saveVenueItemState(state);
+  renderMenu();
+}
+
+/* ---------------------------------------------------------
+   FILTER BAR
+   --------------------------------------------------------- */
+function renderFilterBar() {
+  const bar = document.getElementById("filterBar");
+  bar.innerHTML = "";
+  const chips = ["all", ...CATEGORIES];
+  chips.forEach(cat => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "filter-chip" + (cat === activeCategory ? " active" : "");
+    chip.textContent = cat === "all" ? "All" : CATEGORY_LABELS[cat];
+    chip.addEventListener("click", () => { activeCategory = cat; renderFilterBar(); renderMenu(); });
+    bar.appendChild(chip);
+  });
+}
+
+/* ---------------------------------------------------------
+   MENU GRID
+   --------------------------------------------------------- */
+function renderMenu() {
+  const grid = document.getElementById("menuGrid");
+  grid.innerHTML = "";
+  const state = getVenueItemState();
+  const items = activeCategory === "all" ? ITEMS : ITEMS.filter(i => i.category === activeCategory);
+
+  items.forEach(item => {
+    const s = state[item.id] || {};
+    const isOOS = !!s.outOfStock;
+    const hasComment = !!(s.comment && s.comment.trim());
+    const isUnavailable = isOOS || hasComment;
+
+    const card = document.createElement("div");
+    card.className = "item-card" + (isUnavailable ? " unavailable" : "");
+    card.innerHTML = `
+      <div class="item-img-wrap" style="background-image:url('${item.img}')">
+        <span class="item-tag ${item.category}">${CATEGORY_LABELS[item.category]}</span>
+        ${isUnavailable ? `<span class="item-unavailable-badge">Unavailable</span>` : ""}
+      </div>
+      <div class="item-body">
+        <span class="item-name">${item.name}</span>
+        ${hasComment ? `<span class="item-comment">${s.comment.trim()}</span>` : ""}
+        <span class="item-price">Rs. ${item.price}</span>
+        <div class="staff-actions">
+          <button type="button" class="staff-btn oos-btn ${isOOS ? "oos-active" : ""}">${isOOS ? "In stock" : "Out of stock"}</button>
+          <button type="button" class="staff-btn comment-btn ${hasComment ? "comment-active" : ""}">${hasComment ? "Edit comment" : "Add comment"}</button>
+        </div>
+      </div>
+    `;
+    card.querySelector(".oos-btn").addEventListener("click", () => toggleOutOfStock(item.id));
+    card.querySelector(".comment-btn").addEventListener("click", () => openCommentModal(item.id));
+    grid.appendChild(card);
+  });
+}
+
+/* ---------------------------------------------------------
+   COMMENT MODAL
+   --------------------------------------------------------- */
+const commentOverlay = document.getElementById("commentModalOverlay");
+function openCommentModal(itemId) {
+  commentTargetId = itemId;
+  const item = ITEMS.find(i => i.id === itemId);
+  const state = getVenueItemState();
+  document.getElementById("commentItemName").textContent = item.name;
+  document.getElementById("commentText").value = (state[itemId] && state[itemId].comment) || "";
+  commentOverlay.classList.add("visible");
+}
+function closeCommentModal() { commentOverlay.classList.remove("visible"); commentTargetId = null; }
+document.getElementById("commentModalClose").addEventListener("click", closeCommentModal);
+commentOverlay.addEventListener("click", e => { if (e.target === commentOverlay) closeCommentModal(); });
+document.getElementById("commentSaveBtn").addEventListener("click", () => {
+  if (!commentTargetId) return;
+  saveComment(commentTargetId, document.getElementById("commentText").value.trim());
+  closeCommentModal();
+});
+document.getElementById("commentClearBtn").addEventListener("click", () => {
+  if (!commentTargetId) return;
+  document.getElementById("commentText").value = "";
+  saveComment(commentTargetId, "");
+  closeCommentModal();
+});
+
+/* ---------------------------------------------------------
+   ORDERS QUEUE
+   Shared with checkout.html via localStorage["noshu_orders"]
+   = [ order, order, ... ] where each order has a .venue key.
+   --------------------------------------------------------- */
+function getOrderQueue() {
+  try { return JSON.parse(localStorage.getItem("noshu_orders") || "[]"); }
+  catch (e) { return []; }
+}
+function saveOrderQueue(queue) {
+  localStorage.setItem("noshu_orders", JSON.stringify(queue));
+}
+function removeOrder(orderId) {
+  if (!confirm("Remove this order from the record? The student will no longer see it.")) return;
+  const queue = getOrderQueue().filter(o => o.id !== orderId);
+  saveOrderQueue(queue);
+  if (receiptTargetId === orderId) closeReceiptModal();
+  renderOrders();
+}
+
+function venueOrders() {
+  return getOrderQueue()
+    .filter(o => o.venue === VENUE_KEY)
+    .sort((a, b) => b.confirmedAt - a.confirmedAt);
+}
+
+function timeLeftLabel(order) {
+  if (order.status === "Delivered") return "Delivered";
+  if (order.status === "Ready to pick up") return "Ready for pickup";
+  const target = order.confirmedAt + order.estimatedMinutes * 60000;
+  const diff = target - Date.now();
+  if (diff <= 0) return "Ready for pickup";
+  const mm = Math.floor(diff / 60000);
+  const ss = Math.floor((diff % 60000) / 1000);
+  return `${mm}:${ss.toString().padStart(2, "0")} left`;
+}
+
+function renderOrders() {
+  const orders = venueOrders();
+  document.getElementById("ordersBadge").textContent = orders.length;
+
+  const list = document.getElementById("ordersList");
+  list.innerHTML = "";
+
+  if (orders.length === 0) {
+    list.innerHTML = `<div class="no-orders">No orders yet.</div>`;
+    return;
+  }
+
+  orders.forEach(order => {
+    const row = document.createElement("div");
+    row.className = "order-row";
+    const canRemove = order.status === "Ready to pick up" || order.status === "Delivered";
+    row.innerHTML = `
+      <span class="oid">#${order.displayCode}</span>
+      <span class="otime">${timeLeftLabel(order)}</span>
+      <span class="ototal">Rs. ${order.total}</span>
+      <span class="ostatus" data-status="${order.status}">${order.status}</span>
+      <button type="button" class="view-order-btn">View</button>
+      ${canRemove ? `<button type="button" class="remove-order-btn" title="Remove from record" aria-label="Remove order">✕</button>` : ""}
+    `;
+    row.querySelector(".view-order-btn").addEventListener("click", () => openReceiptModal(order.id));
+    if (canRemove) row.querySelector(".remove-order-btn").addEventListener("click", () => removeOrder(order.id));
+    list.appendChild(row);
+  });
+}
+
+const ordersToggle = document.getElementById("ordersToggle");
+const ordersPanel = document.getElementById("ordersPanel");
+const ordersChevron = document.getElementById("ordersChevron");
+ordersToggle.addEventListener("click", () => {
+  ordersPanel.classList.toggle("open");
+  ordersChevron.classList.toggle("open");
+});
+
+/* ---------------------------------------------------------
+   RECEIPT / STATUS MODAL
+   --------------------------------------------------------- */
+const receiptOverlay = document.getElementById("receiptModalOverlay");
+function openReceiptModal(orderId) {
+  const order = getOrderQueue().find(o => o.id === orderId);
+  if (!order) return;
+  receiptTargetId = orderId;
+
+  document.getElementById("receiptOid").textContent = "#" + order.displayCode;
+  const listEl = document.getElementById("receiptList");
+  listEl.innerHTML = "";
+  order.items.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "receipt-row";
+    row.innerHTML = `
+      <div class="rr-name">${item.name}<span class="rr-cat">${CATEGORY_LABELS[item.category] || ""}</span></div>
+      <div class="rr-qty">× ${item.qty}</div>
+      <div class="rr-total">Rs. ${item.price * item.qty}</div>
+    `;
+    listEl.appendChild(row);
+  });
+  document.getElementById("receiptTotal").textContent = `Rs. ${order.total}`;
+
+  document.getElementById("receiptDetails").innerHTML = `
+    <div class="drow"><span>Name</span><span>${order.name}</span></div>
+    <div class="drow"><span>Phone</span><span>${order.phone}</span></div>
+    <div class="drow"><span>Enrollment #</span><span>${order.enrollment || "—"}</span></div>
+    <div class="drow"><span>Payment</span><span>${order.payment}</span></div>
+  `;
+
+  document.getElementById("statusSelect").value = order.status || "Preparing";
+  receiptOverlay.classList.add("visible");
+}
+function closeReceiptModal() { receiptOverlay.classList.remove("visible"); receiptTargetId = null; }
+document.getElementById("receiptModalClose").addEventListener("click", closeReceiptModal);
+receiptOverlay.addEventListener("click", e => { if (e.target === receiptOverlay) closeReceiptModal(); });
+
+document.getElementById("statusSelect").addEventListener("change", (e) => {
+  if (!receiptTargetId) return;
+  const queue = getOrderQueue();
+  const idx = queue.findIndex(o => o.id === receiptTargetId);
+  if (idx === -1) return;
+  queue[idx].status = e.target.value;
+  saveOrderQueue(queue);
+  renderOrders();
+});
+
+/* ---------------------------------------------------------
+   LIVE SYNC + INIT
+   --------------------------------------------------------- */
+window.addEventListener("storage", (e) => {
+  if (e.key === "noshu_orders") renderOrders();
+  if (e.key === "noshu_item_state") renderMenu();
+});
+setInterval(() => { renderOrders(); }, 2000);
+
+renderFilterBar();
+renderMenu();
+renderOrders();
+</script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>NoshU — Staff Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary-color: #ff5722;
+    --accent-color: #ffb300;
+    --bg-color: #fafafa;
+    --card-bg: #ffffff;
+    --text-dark: #1a1a1a;
+    --text-soft: #6b6b6b;
+    --status-error: #c62828;
+    --line: rgba(26,26,26,0.10);
+    --font-display: 'Fredoka', sans-serif;
+    --font-body: 'Sora', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg-color);
+    color:var(--text-dark);
+    font-family:var(--font-body);
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  button{ font-family:inherit; cursor:pointer; }
+  a{ color:inherit; text-decoration:none; }
+  input{ font-family:inherit; }
+
+  .login-wrap{
+    width:100%;
+    max-width:380px;
+  }
+
+  .logo-row{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    margin-bottom:26px;
+  }
+  .logo-mark{ width:32px; height:44px; flex:0 0 auto; display:block; }
+  .logo-word{
+    font-family:var(--font-display); font-weight:700; font-size:22px;
+    color:var(--text-dark);
+  }
+
+  .card{
+    background:var(--card-bg);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:30px 26px 28px;
+    box-shadow:0 8px 28px rgba(26,26,26,0.08);
+  }
+  .card-eyebrow{
+    font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--primary-color); text-align:center; margin-bottom:6px;
+  }
+  .card h1{
+    font-family:var(--font-display); font-size:22px; font-weight:600;
+    text-align:center; margin:0 0 24px;
+  }
+
+  .field{ margin-bottom:18px; }
+  .field label{
+    display:block; font-size:13px; font-weight:600; margin-bottom:6px;
+    color:var(--text-dark);
+  }
+  .input-wrap{ position:relative; }
+  .input-wrap input{
+    width:100%; padding:13px 14px; border-radius:10px;
+    border:1.5px solid var(--line); font-size:14.5px;
+    background:#fff; color:var(--text-dark);
+    transition:border-color 0.15s ease;
+  }
+  .input-wrap input:focus{ outline:none; border-color:var(--primary-color); }
+  .input-wrap input.invalid{ border-color:var(--status-error); }
+
+  .toggle-pw{
+    position:absolute; right:6px; top:50%; transform:translateY(-50%);
+    border:none; background:transparent; padding:8px; font-size:12.5px;
+    font-weight:700; color:var(--text-soft); border-radius:6px;
+  }
+  .toggle-pw:hover{ color:var(--primary-color); }
+
+  .field-error{
+    display:none; color:var(--status-error); font-size:12px; margin-top:5px; font-weight:500;
+  }
+  .field-error.visible{ display:block; }
+
+  .form-error{
+    display:none;
+    background:rgba(198,40,40,0.08); color:var(--status-error);
+    border:1px solid rgba(198,40,40,0.25);
+    border-radius:10px; padding:10px 12px;
+    font-size:13px; font-weight:500;
+    margin-bottom:16px;
+  }
+  .form-error.visible{ display:block; }
+
+  .login-btn{
+    width:100%;
+    background:var(--primary-color); color:#fff; border:none;
+    border-radius:10px; padding:14px; font-size:15px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .login-btn:hover{ background:#e64a19; }
+  .login-btn:disabled{ background:#c9c9c9; cursor:not-allowed; }
+
+  .spinner{
+    display:none;
+    width:16px; height:16px;
+    border:2px solid rgba(255,255,255,0.5);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation: spin 0.7s linear infinite;
+  }
+  .login-btn.loading .spinner{ display:inline-block; }
+  .login-btn.loading .btn-text{ display:none; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .back-link{
+    display:block; text-align:center; margin-top:20px;
+    font-size:13px; color:var(--text-soft); font-weight:600;
+  }
+  .back-link:hover{ color:var(--primary-color); }
+</style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <a class="logo-row" href="index.html" aria-label="NoshU home">
+    <svg class="logo-mark" viewBox="0 -40 200 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M 92 45 C 80 32, 104 22, 92 5 C 80 -12, 104 -22, 92 -35" fill="none" stroke="var(--accent-color)" stroke-width="12" stroke-linecap="round"/>
+      <path d="M 118 45 C 106 32, 130 22, 118 5 C 106 -12, 130 -22, 118 -35" fill="none" stroke="var(--accent-color)" stroke-width="12" stroke-linecap="round"/>
+      <path d="
+        M 40 50
+        L 40 150
+        A 60 60 0 0 0 160 150
+        L 160 115
+        A 11 11 0 0 0 150 102
+        A 11 11 0 0 0 150 82
+        A 11 11 0 0 0 160 69
+        L 160 50
+        A 20 20 0 0 0 120 50
+        L 120 150
+        A 20 20 0 0 1 80 150
+        L 80 50
+        A 20 20 0 0 0 40 50 Z
+      " fill="var(--primary-color)"/>
+      <ellipse cx="100" cy="192" rx="20" ry="3" fill="#cf4327"/>
+      <path d="M 82 182 A 18 18 0 0 0 118 182 Z" fill="#cf4327"/>
+      <line x1="109" y1="184" x2="123" y2="170" stroke="#cf4327" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse cx="125" cy="168" rx="3.5" ry="5" fill="#cf4327" transform="rotate(35 125 168)"/>
+      <path d="M 97 178 C 94 174, 100 171, 97 167" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M 103 178 C 100 174, 106 171, 103 167" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span class="logo-word">NoshU</span>
+  </a>
+
+  <div class="card">
+    <div class="card-eyebrow">Staff access</div>
+    <h1>Sign in</h1>
+
+    <div class="form-error" id="formError">Incorrect username or password. Please try again.</div>
+
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label for="username">Username</label>
+        <div class="input-wrap">
+          <input type="text" id="username" placeholder="Enter your username" autocomplete="username">
+        </div>
+        <div class="field-error" id="errUsername">Please enter your username.</div>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+          <button type="button" class="toggle-pw" id="togglePw">Show</button>
+        </div>
+        <div class="field-error" id="errPassword">Please enter your password.</div>
+      </div>
+
+      <button type="submit" class="login-btn" id="loginBtn">
+        <span class="btn-text">Log in</span>
+        <span class="spinner"></span>
+      </button>
+    </form>
+
+    <a class="back-link" href="index.html">← Back to NoshU</a>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   STAFF LOGIN
+   Front-end only for now: validates the fields are filled,
+   then hands off to the staff dashboard. Swap checkStaffLogin()
+   for a real auth call (Firebase Auth, your own API, etc.)
+   whenever the backend is ready — everything else here stays
+   the same.
+   ========================================================= */
+const form = document.getElementById("loginForm");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const loginBtn = document.getElementById("loginBtn");
+const formError = document.getElementById("formError");
+
+document.getElementById("togglePw").addEventListener("click", () => {
+  const showing = passwordInput.type === "text";
+  passwordInput.type = showing ? "password" : "text";
+  document.getElementById("togglePw").textContent = showing ? "Show" : "Hide";
+});
+
+function validate() {
+  let valid = true;
+  formError.classList.remove("visible");
+
+  const userOk = usernameInput.value.trim().length > 0;
+  usernameInput.classList.toggle("invalid", !userOk);
+  document.getElementById("errUsername").classList.toggle("visible", !userOk);
+  if (!userOk) valid = false;
+
+  const passOk = passwordInput.value.length > 0;
+  passwordInput.classList.toggle("invalid", !passOk);
+  document.getElementById("errPassword").classList.toggle("visible", !passOk);
+  if (!passOk) valid = false;
+
+  return valid;
+}
+
+// Staff credentials — each maps to that venue's own dashboard.
+// Swap this for a real auth call (Firebase Auth, your own API, etc.)
+// whenever the backend is ready; everything else here stays the same.
+const STAFF_ACCOUNTS = [
+  { username: "ark@bahria",  password: "bimcs123a", dashboard: "staff_ark.html" },
+  { username: "main@bahria", password: "bimcs123m", dashboard: "staff_main_cafeteria.html" },
+  { username: "wow@bahria",  password: "bimcs123w", dashboard: "staff_wowfries.html" },
+];
+
+function checkStaffLogin(username, password) {
+  const match = STAFF_ACCOUNTS.find(
+    acc => acc.username.toLowerCase() === username.toLowerCase() && acc.password === password
+  );
+  return Promise.resolve(match ? match.dashboard : null);
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (!validate()) return;
+
+  loginBtn.classList.add("loading");
+  loginBtn.disabled = true;
+
+  checkStaffLogin(usernameInput.value.trim(), passwordInput.value)
+    .then((dashboard) => {
+      if (dashboard) {
+        try {
+          sessionStorage.setItem("noshu_staff_session", JSON.stringify({
+            username: usernameInput.value.trim(),
+            loggedInAt: Date.now()
+          }));
+        } catch (err) { /* storage unavailable */ }
+        window.location.href = dashboard;
+      } else {
+        formError.classList.add("visible");
+        loginBtn.classList.remove("loading");
+        loginBtn.disabled = false;
+      }
+    });
+});
+</script>
+</body>
+</html>
