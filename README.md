@@ -1,5 +1,5 @@
 # NoshU
-# 🍔 NoshU
+# 
 
 **Multi-venue campus food ordering platform.** Students order ahead and track pickup live; venue staff manage incoming orders and menu availability from a real-time dashboard.
 
