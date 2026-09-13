@@ -5,7 +5,7 @@
 ![status](https://img.shields.io/badge/status-active-brightgreen)
 ![frontend](https://img.shields.io/badge/frontend-HTML%2FCSS%2FVanilla%20JS-orange)
 ![backend](https://img.shields.io/badge/backend-Supabase-3ECF8E)
-![license](https://img.shields.io/badge/license-MIT-blue)
+![license](https://img.shields.io/badge/license-GNU-blue)
 
 ---
 
