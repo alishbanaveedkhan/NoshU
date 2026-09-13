@@ -178,4 +178,4 @@ For the complete architecture writeup — including the local-storage → Supaba
 
 ## 📜 License
 
-MIT — see [`LICENSE`](LICENSE) for details.
+GNU v3.0 — see [`LICENSE`](LICENSE) for details.
