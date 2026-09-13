@@ -1,7 +1,5 @@
 # NoshU
-# 
-
-**Multi-venue campus food ordering platform.** Students order ahead and track pickup live; venue staff manage incoming orders and menu availability from a real-time dashboard.
+# **Multi-venue campus food ordering platform.** Students order ahead and track pickup live; venue staff manage incoming orders and menu availability from a real-time dashboard.
 
 ![status](https://img.shields.io/badge/status-active-brightgreen)
 ![frontend](https://img.shields.io/badge/frontend-HTML%2FCSS%2FVanilla%20JS-orange)
